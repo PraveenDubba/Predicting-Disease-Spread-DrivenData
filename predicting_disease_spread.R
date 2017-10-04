@@ -20,7 +20,7 @@ boxplot(dataset$total_cases)  # confirms the presence of outliers
 dataset_iq = dataset[dataset$city=='iq',]
 dataset_sj = dataset[dataset$city=='sj',]
 
-#======================================== Analysis for San Juan city =========================
+#======================================== Analyzing San Juan city's data ==================================================================
 # Exploring missing values
 summary(dataset_sj)
 # Imputing missing values with its mean
@@ -59,7 +59,7 @@ for(i in 5: (ncol(dataset_sj)))
 }
 
 
-# ============================================= experimenting ===============================================
+# ======================================= Removing outliers from dependent variables ===================================================
 nrow(dataset_sj[abs(dataset_sj$ndvi_ne)>3 | abs(dataset_sj$ndvi_nw)>3 | abs(dataset_sj$ndvi_se)>3 | abs(dataset_sj$ndvi_sw)>3 |
                 abs(dataset_sj$precipitation_amt_mm)>3 | abs(dataset_sj$reanalysis_dew_point_temp_k)>3 | abs(dataset_sj$reanalysis_min_air_temp_k)>3 |
                   abs(dataset_sj$reanalysis_precip_amt_kg_per_m2)>3 | abs(dataset_sj$reanalysis_relative_humidity_percent)>3 | 
@@ -73,12 +73,11 @@ dataset_sj = (dataset_sj[abs(dataset_sj$ndvi_ne)<3 & abs(dataset_sj$ndvi_nw)<3 &
                            abs(dataset_sj$reanalysis_sat_precip_amt_mm)<3 & abs(dataset_sj$station_precip_mm)<3 & abs(dataset_sj$station_min_temp_c)<3,])
 
 summary(dataset_sj)
-# ===========================================================================================================
 # Checking for multi-collinearity
 kappa(dataset_sj[-1:-4],exact = T)  
 # This large value indicates that there is multi-collinearity issue in the dataset
 
-#============================ Backward selection to remove multi-collinearity ===============================
+#============================ Backward selection to remove multi-collinearity ==========================================================
 linear_reg_tuning = lm(total_cases~.,data = dataset_sj[c(-2,-3,-4)])
 linear_reg_tuning_summ = (summary(linear_reg_tuning))
 coeff_df = data.frame(linear_reg_tuning_summ$coefficients)
@@ -100,7 +99,7 @@ linear_reg_tuned_summ
 
 # Check for multi-collinearity after backward elimination
 kappa(dataset_sj[dum[-1]],exact = T)   # A lower value indicating less or no multi-collinearity
-# ======================= Data splitting sj=========================
+# ======================= Data splitting sj=============================================================================================
 library(caTools)
 set.seed(12345)
 split = sample.split(dataset_sj$total_cases, SplitRatio = 0.7)
@@ -122,7 +121,7 @@ mean(abs(eval$obs - eval$pred))
 
 # RMSE: 22.19   RSquared: 22  Mae: 16.16
 
-#==================================== xgboost==================== Rank #3=================
+#==================================== xgboost==================== Rank #3==============================================================
 library(xgboost)
 
 xgb_train_ds= xgb.DMatrix(as.matrix(training_set[-1]), label=(training_set$total_cases))
@@ -145,7 +144,7 @@ eval = setNames(data.frame(test_set$total_cases,y_pred),c("obs","pred"))
 defaultSummary(eval)
 mean(abs(eval$obs - eval$pred))
 # RMSE: 22.2   RSqaured: 19  MAE: 16.87
-#===================================Artificial Neural Network========== Rank #1===============
+#===================================Artificial Neural Network========== Rank #1========================================================
 # install.packages("h2o")
 library(h2o)
 
@@ -179,7 +178,7 @@ mean(abs(eval$obs - eval$pred))
 
 # h2o.shutdown()
 # y
-#======================================== Analysis for iq city =========================
+#======================================== Analyzing Iquitos city's data ================================================================
 # Looking for missing values
 summary(dataset_iq)
 # Imputing missing values with its mean
@@ -217,7 +216,7 @@ for(i in 5: (ncol(dataset_iq)))
 }
 
 
-# ======================================== experimenting =============================================================
+# ==================================== Removing outliers from dependent variables =============================================================
 nrow(dataset_iq[abs(dataset_iq$ndvi_ne)>3 | abs(dataset_iq$ndvi_nw)>3 | abs(dataset_iq$ndvi_se)>3 | abs(dataset_iq$ndvi_sw)>3 |
                   abs(dataset_iq$precipitation_amt_mm)>3 | abs(dataset_iq$reanalysis_dew_point_temp_k)>3 | abs(dataset_iq$reanalysis_min_air_temp_k)>3 |
                   abs(dataset_iq$reanalysis_precip_amt_kg_per_m2)>3 | abs(dataset_iq$reanalysis_relative_humidity_percent)>3 | 
@@ -233,13 +232,10 @@ dataset_iq = (dataset_iq[abs(dataset_iq$ndvi_ne)<3 & abs(dataset_iq$ndvi_nw)<3 &
                            abs(dataset_iq$station_avg_temp_c)<3 & abs(dataset_iq$reanalysis_air_temp_k)<3, ])
 
 summary(dataset_iq)
-# ====================================================================================================================
-
-
 # Check for multi-collinearity
 kappa(dataset_iq[-1:-4],exact = T)  # This large value indicates that there is multi-collinearity issue 
 
-#============================ Backward selection to remove multi-collinearity in dataset_iq ===============================
+#============================ Backward selection to remove multi-collinearity in dataset_iq ==============================================
 linear_reg_tuning = lm(total_cases~.,data = dataset_iq[c(-2,-3,-4)])
 linear_reg_tuning_summ = (summary(linear_reg_tuning))
 coeff_df = data.frame(linear_reg_tuning_summ$coefficients)
@@ -258,14 +254,14 @@ for(i in 1:1000 ) {
 }
 dum
 linear_reg_tuned_summ
-# ======================= Data splitting iq=========================
+# ======================= Data splitting iq==============================================================================================
 # library(caTools)
 set.seed(54321)
 split = sample.split(dataset_iq$total_cases, SplitRatio = 0.7)
 training_set = subset(dataset_iq[c("total_cases",dum[-1])], split == TRUE)
 test_set = subset(dataset_iq[c("total_cases",dum[-1])], split == FALSE)
 
-#==================================== Linear regression model iq========== Rank #1=========================================
+#==================================== Linear regression model iq========== Rank #1=======================================================
 linear_reg_iq = lm(total_cases~.,data = training_set)
 ln_reg_summ = (summary(linear_reg_iq))
 ln_reg_summ
@@ -290,7 +286,7 @@ mean(abs(eval$obs - eval$pred))
 # ggplot() + geom_point(aes(x=test_set[[1]] ,y= x1[[1]]))
 
 
-#===================================Artificial Neural Network==========Rank #2===============
+#===================================Artificial Neural Network==========Rank #2=========================================================
 # install.packages("h2o")
 library(h2o)
 
@@ -324,7 +320,7 @@ mean(abs(eval$obs - eval$pred))
 
 # h2o.shutdown()
 # y
-#=========================== test set prep =================
+#=========================== test set prep ===========================================================================================
 test_data = read.csv('dengue_features_test.csv',header=T,sep = ',',quote = "")
 
 test_data = test_data[,c(4,1,2,3,5:24)]
@@ -362,7 +358,7 @@ for(i in 5: (ncol(testset_sj)))
 summary(testset_sj)
 test_final = rbind.data.frame(testset_sj,testset_iq)
 
-#========================== predictions ========================
+#========================== predictions =================================================================================================
 # ann predictions
 y_pred_test_ann_sj = h2o.predict(object = ann_model_sj, newdata = as.h2o(testset_sj))
 y_pred_test_ann_iq = h2o.predict(object = ann_model_iq, newdata = as.h2o(testset_iq))
